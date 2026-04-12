@@ -31,26 +31,28 @@
   </style>
 </head>
 
-<body class="bg-slate-950 text-slate-200 min-h-screen flex">
+<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col sm:flex-row">
 
-  <aside class="w-64 bg-slate-900 p-6 border-r border-slate-800">
-    <h1 class="text-xl font-bold mb-6">&#127912; Color Tool</h1>
-    <p class="text-sm text-slate-400">
+  <aside
+    class="w-full sm:w-64 bg-slate-900 p-4 sm:p-6 border-b border-slate-800 sm:border-b-0 sm:border-r flex items-center gap-3 sm:block">
+    <h1 class="text-xl font-bold mb-0 sm:mb-6">&#127912; Color Tool</h1>
+    <p class="text-sm text-slate-400 sm:mt-0">
       HEX &rarr; OKLCH + Tailwind Match
     </p>
   </aside>
 
-  <main class="flex-1 p-8">
+  <main class="flex-1 p-4 sm:p-8">
     <div class="max-w-3xl mx-auto">
 
       <h2 class="text-2xl font-semibold mb-4">Color Matcher</h2>
 
-      <div class="flex gap-3 mb-6">
-        <input id="hexInput" class="flex-1 p-3 rounded-xl bg-slate-800 border border-slate-700" placeholder="#db0a0a" />
+      <div class="flex flex-wrap gap-3 mb-6">
+        <input id="hexInput" class="flex-1 min-w-0 p-3 rounded-xl bg-slate-800 border border-slate-700"
+          placeholder="#db0a0a" />
 
         <input type="color" id="colorPicker" class="w-14 h-14 rounded-xl border border-slate-700" />
 
-        <button onclick="handleFind()" class="px-5 py-3 bg-blue-600 rounded-xl font-semibold">
+        <button onclick="handleFind()" class="flex-1 sm:flex-none px-5 py-3 bg-blue-600 rounded-xl font-semibold">
           Buscar
         </button>
       </div>
