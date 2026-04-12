@@ -1,58 +1,52 @@
 # Tailwind Color Matcher
 
-Ferramenta web simples para comparar uma cor em HEX com uma lista de cores Tailwind (em OKLCH), encontrando a mais próxima com base em distancia de cor.
+Ferramenta web para comparar uma cor em HEX com a paleta Tailwind em OKLCH e encontrar o melhor match.
 
 ## Funcionalidades
 
 - Entrada de cor por HEX (`#rrggbb`) e color picker
-- Conversao interna de `HEX -> sRGB -> OKLab -> OKLCH`
-- Busca da cor mais proxima no objeto `tailwindColors`
-- Exibicao de:
-  - Cor de entrada
-  - Melhor match
-  - Top 5 correspondencias mais proximas
-  - Variavel CSS sugerida (ex: `--color-red-500`)
+- Conversão interna de `HEX -> sRGB -> OKLab -> OKLCH`
+- Busca da cor mais próxima no conjunto `tailwindColors`
+- Exibição da cor de entrada, melhor match, top 5 resultados e variável CSS sugerida
 
 ## Estrutura do projeto
 
-- `index.html`: arquivo principal da aplicacao
-- `preview.html`: versao/rascunho da interface (se ainda estiver em uso)
+- `index.html`: interface e lógica principal da aplicação
+- `tailwindColors.js`: objeto com a paleta de cores em OKLCH
 - `site.webmanifest`: manifest PWA
-- Icones:
-  - `apple-touch-icon.png`
-  - `favicon.ico`
-  - `favicon-16x16.png`
-  - `favicon-32x32.png`
-  - `android-chrome-192x192.png`
-  - `android-chrome-512x512.png`
+
+Ícones na raiz do projeto:
+
+- `apple-touch-icon.png`
+- `favicon.ico`
+- `favicon-16x16.png`
+- `favicon-32x32.png`
+- `android-chrome-192x192.png`
+- `android-chrome-512x512.png`
 
 ## Como executar
 
-Como o projeto e estatico, basta abrir o `index.html` no navegador.
+Como o projeto é estático, você pode abrir `index.html` direto no navegador. A opção recomendada é usar servidor local.
 
-Opcao recomendada (servidor local) para evitar problemas de caminho:
+### VS Code Live Server
 
-### Com VS Code Live Server
+1. Instale a extensão Live Server.
+2. Clique com o botão direito em `index.html`.
+3. Selecione `Open with Live Server`.
 
-1. Instale a extensao Live Server
-2. Clique com o botao direito em `index.html`
-3. Selecione `Open with Live Server`
+### Python
 
-### Com Python
-
-No diretorio do projeto, rode:
+No diretório do projeto, execute:
 
 ```bash
 python -m http.server 5500
 ```
 
-Depois acesse:
+Depois acesse `http://localhost:5500`.
 
-`http://localhost:5500`
+## Personalização
 
-## Personalizacao
-
-A lista de cores usada no match esta no objeto `tailwindColors` dentro do HTML principal.
+A lista de cores usada no match está em `tailwindColors.js`.
 
 Exemplo:
 
@@ -63,13 +57,11 @@ const tailwindColors = {
 };
 ```
 
-Para melhorar a precisao, adicione mais tons do Tailwind nesse objeto.
+Para melhorar a precisão, adicione mais tons do Tailwind nesse objeto.
 
-## Observacao sobre favicon e manifest
+## Favicon e Manifest
 
-No estado atual, os links no `<head>` de `preview.html` apontam para `/public/...`, mas os arquivos estao na raiz do projeto.
-
-Se os arquivos estiverem mesmo na raiz, use:
+No estado atual do projeto, os arquivos estão na raiz. Portanto, os links no `<head>` devem usar:
 
 - `/apple-touch-icon.png`
 - `/favicon.ico`
@@ -77,14 +69,12 @@ Se os arquivos estiverem mesmo na raiz, use:
 - `/favicon-16x16.png`
 - `/site.webmanifest`
 
-Se estiver usando um build tool que publica assets em `/public`, mantenha `/public/...`.
-
 ## Tecnologias
 
 - HTML
-- JavaScript vanilla
+- JavaScript (Vanilla)
 - Tailwind CSS via CDN
 
-## Licenca
+## Licença
 
-Uso livre para estudo e prototipacao. Ajuste esta secao se quiser definir uma licenca formal (MIT, Apache-2.0 etc.).
+Uso livre para estudo e prototipação. Ajuste esta seção se quiser adotar uma licença formal (por exemplo, MIT).
