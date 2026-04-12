@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -6,11 +6,11 @@
   <title>Tailwind Color Matcher</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
-  <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
-  <link rel="manifest" href="/public/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
 
   <style>
     .fade-in {
@@ -34,9 +34,9 @@
 <body class="bg-slate-950 text-slate-200 min-h-screen flex">
 
   <aside class="w-64 bg-slate-900 p-6 border-r border-slate-800">
-    <h1 class="text-xl font-bold mb-6">🎨 Color Tool</h1>
+    <h1 class="text-xl font-bold mb-6">&#127912; Color Tool</h1>
     <p class="text-sm text-slate-400">
-      HEX → OKLCH + Tailwind Match
+      HEX &rarr; OKLCH + Tailwind Match
     </p>
   </aside>
 
@@ -55,7 +55,6 @@
         </button>
       </div>
 
-      <!-- Preview -->
       <div class="flex gap-4 mb-6">
         <div>
           <p class="text-xs mb-1 text-slate-400">Input</p>
@@ -68,7 +67,6 @@
         </div>
       </div>
 
-      <!-- Result -->
       <div id="resultCard" class="hidden bg-slate-900 border border-slate-800 p-5 rounded-2xl fade-in">
 
         <h3 id="resultName" class="text-lg font-bold mb-2"></h3>
@@ -76,26 +74,13 @@
         <code id="resultValue" class="block bg-slate-950 p-3 rounded-lg text-sm whitespace-pre"></code>
       </div>
 
-      <!-- Top -->
       <div id="topList" class="mt-6 grid gap-3"></div>
 
     </div>
   </main>
 
+  <script src="./tailwindColors.js"></script>
   <script>
-    // ==========================
-    // COLORS (adicione todas aqui depois)
-    // ==========================
-    const tailwindColors = {
-      color_red_500: "oklch(63.7% 0.237 25.331)",
-      color_red_600: "oklch(57.7% 0.245 27.325)",
-      color_red_700: "oklch(50.5% 0.213 27.518)",
-      color_gray_900: "oklch(21% 0.034 264.665)"
-    }
-
-    // ==========================
-    // CONVERSÕES
-    // ==========================
     function hexToRgb(hex) {
       hex = hex.replace("#", "")
       if (hex.length === 3) hex = hex.split("").map(c => c + c).join("")
@@ -160,12 +145,17 @@
     }
 
     function distance(a, b) {
-      return (a.l - b.l) ** 2 + (a.c - b.c) ** 2 + hueDiff(a.h, b.h) ** 2
+      const dl = a.l - b.l
+      const dc = a.c - b.c
+      const dh = hueDiff(a.h, b.h) / 180
+
+      const wL = 1
+      const wC = 2
+      const wH = 0.5
+
+      return wL * (dl ** 2) + wC * (dc ** 2) + wH * (dh ** 2)
     }
 
-    // ==========================
-    // CORE
-    // ==========================
     function findNearest(hex) {
       const input = hexToOklch(hex)
 
@@ -181,9 +171,6 @@
         .sort((a, b) => a.dist - b.dist)
     }
 
-    // ==========================
-    // UI
-    // ==========================
     function handleFind() {
       const hex = document.getElementById("hexInput").value
       if (!hex) return
@@ -194,11 +181,9 @@
 
       const cssVar = "--" + best.name.replace(/_/g, "-")
 
-      // previews
-      document.getElementById("inputColor").style.background = hex
+      document.getElementById("inputColor").style.background = `${hex.includes("#") ? "" : "#"}${hex}`
       document.getElementById("matchColor").style.background = best.value
 
-      // result
       document.getElementById("resultName").innerText = best.name
 
       document.getElementById("resultValue").innerText =
@@ -242,7 +227,6 @@ CSS: ${cssVar}`
       })
     }
 
-    // sync picker
     document.getElementById("colorPicker").addEventListener("input", (e) => {
       document.getElementById("hexInput").value = e.target.value
     })
