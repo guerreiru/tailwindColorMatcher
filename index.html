@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Tailwind Color Matcher</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/public/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/public/favicon-16x16.png">
+  <link rel="manifest" href="/public/site.webmanifest">
+
+  <style>
+    .fade-in {
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 min-h-screen flex">
+
+  <aside class="w-64 bg-slate-900 p-6 border-r border-slate-800">
+    <h1 class="text-xl font-bold mb-6">🎨 Color Tool</h1>
+    <p class="text-sm text-slate-400">
+      HEX → OKLCH + Tailwind Match
+    </p>
+  </aside>
+
+  <main class="flex-1 p-8">
+    <div class="max-w-3xl mx-auto">
+
+      <h2 class="text-2xl font-semibold mb-4">Color Matcher</h2>
+
+      <div class="flex gap-3 mb-6">
+        <input id="hexInput" class="flex-1 p-3 rounded-xl bg-slate-800 border border-slate-700" placeholder="#db0a0a" />
+
+        <input type="color" id="colorPicker" class="w-14 h-14 rounded-xl border border-slate-700" />
+
+        <button onclick="handleFind()" class="px-5 py-3 bg-blue-600 rounded-xl font-semibold">
+          Buscar
+        </button>
+      </div>
+
+      <!-- Preview -->
+      <div class="flex gap-4 mb-6">
+        <div>
+          <p class="text-xs mb-1 text-slate-400">Input</p>
+          <div id="inputColor" class="w-16 h-16 rounded-xl border"></div>
+        </div>
+
+        <div>
+          <p class="text-xs mb-1 text-slate-400">Match</p>
+          <div id="matchColor" class="w-16 h-16 rounded-xl border"></div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="resultCard" class="hidden bg-slate-900 border border-slate-800 p-5 rounded-2xl fade-in">
+
+        <h3 id="resultName" class="text-lg font-bold mb-2"></h3>
+
+        <code id="resultValue" class="block bg-slate-950 p-3 rounded-lg text-sm whitespace-pre"></code>
+      </div>
+
+      <!-- Top -->
+      <div id="topList" class="mt-6 grid gap-3"></div>
+
+    </div>
+  </main>
+
+  <script>
+    // ==========================
+    // COLORS (adicione todas aqui depois)
+    // ==========================
+    const tailwindColors = {
+      color_red_500: "oklch(63.7% 0.237 25.331)",
+      color_red_600: "oklch(57.7% 0.245 27.325)",
+      color_red_700: "oklch(50.5% 0.213 27.518)",
+      color_gray_900: "oklch(21% 0.034 264.665)"
+    }
+
+    // ==========================
+    // CONVERSÕES
+    // ==========================
+    function hexToRgb(hex) {
+      hex = hex.replace("#", "")
+      if (hex.length === 3) hex = hex.split("").map(c => c + c).join("")
+      const num = parseInt(hex, 16)
+
+      return {
+        r: ((num >> 16) & 255) / 255,
+        g: ((num >> 8) & 255) / 255,
+        b: (num & 255) / 255
+      }
+    }
+
+    function srgbToLinear(c) {
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    }
+
+    function rgbToOklab(r, g, b) {
+      r = srgbToLinear(r)
+      g = srgbToLinear(g)
+      b = srgbToLinear(b)
+
+      const l = 0.4122 * r + 0.5363 * g + 0.0514 * b
+      const m = 0.2119 * r + 0.6807 * g + 0.1074 * b
+      const s = 0.0883 * r + 0.2817 * g + 0.63 * b
+
+      const l_ = Math.cbrt(l)
+      const m_ = Math.cbrt(m)
+      const s_ = Math.cbrt(s)
+
+      return {
+        L: 0.2104 * l_ + 0.7936 * m_ - 0.0041 * s_,
+        a: 1.978 * l_ - 2.4286 * m_ + 0.4506 * s_,
+        b: 0.0259 * l_ + 0.7828 * m_ - 0.8087 * s_
+      }
+    }
+
+    function oklabToOklch(L, a, b) {
+      const c = Math.sqrt(a * a + b * b)
+      let h = Math.atan2(b, a) * (180 / Math.PI)
+      if (h < 0) h += 360
+      return { l: L, c, h }
+    }
+
+    function hexToOklch(hex) {
+      const { r, g, b } = hexToRgb(hex)
+      const lab = rgbToOklab(r, g, b)
+      return oklabToOklch(lab.L, lab.a, lab.b)
+    }
+
+    function parseOklch(str) {
+      const parts = str.match(/oklch\(([^)]+)\)/)[1].split(/\s+/)
+      return {
+        l: parseFloat(parts[0]) / 100,
+        c: parseFloat(parts[1]),
+        h: parseFloat(parts[2])
+      }
+    }
+
+    function hueDiff(h1, h2) {
+      const d = Math.abs(h1 - h2)
+      return Math.min(d, 360 - d)
+    }
+
+    function distance(a, b) {
+      return (a.l - b.l) ** 2 + (a.c - b.c) ** 2 + hueDiff(a.h, b.h) ** 2
+    }
+
+    // ==========================
+    // CORE
+    // ==========================
+    function findNearest(hex) {
+      const input = hexToOklch(hex)
+
+      return Object.entries(tailwindColors)
+        .map(([name, value]) => {
+          const color = parseOklch(value)
+          return {
+            name,
+            value,
+            dist: distance(input, color)
+          }
+        })
+        .sort((a, b) => a.dist - b.dist)
+    }
+
+    // ==========================
+    // UI
+    // ==========================
+    function handleFind() {
+      const hex = document.getElementById("hexInput").value
+      if (!hex) return
+
+      const input = hexToOklch(hex)
+      const results = findNearest(hex)
+      const best = results[0]
+
+      const cssVar = "--" + best.name.replace(/_/g, "-")
+
+      // previews
+      document.getElementById("inputColor").style.background = hex
+      document.getElementById("matchColor").style.background = best.value
+
+      // result
+      document.getElementById("resultName").innerText = best.name
+
+      document.getElementById("resultValue").innerText =
+        `Input: oklch(${input.l.toFixed(4)} ${input.c.toFixed(4)} ${input.h.toFixed(2)})
+Match: ${best.value}
+CSS: ${cssVar}`
+
+      document.getElementById("resultCard").classList.remove("hidden")
+
+      renderTop(results.slice(0, 5))
+    }
+
+    function renderTop(list) {
+      const container = document.getElementById("topList")
+      container.innerHTML = ""
+
+      list.forEach(item => {
+        const div = document.createElement("div")
+
+        div.className =
+          "flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl fade-in"
+
+        div.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg border"
+          style="background:${item.value}">
+        </div>
+
+        <div>
+          <p>${item.name}</p>
+          <p class="text-xs text-slate-400">${item.value}</p>
+        </div>
+      </div>
+
+      <span class="text-xs text-slate-500">
+        ${item.dist.toFixed(4)}
+      </span>
+    `
+
+        container.appendChild(div)
+      })
+    }
+
+    // sync picker
+    document.getElementById("colorPicker").addEventListener("input", (e) => {
+      document.getElementById("hexInput").value = e.target.value
+    })
+  </script>
+
+</body>
+
+</html>
